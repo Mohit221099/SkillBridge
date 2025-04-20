@@ -22,6 +22,15 @@ SkillBridge is a community-driven platform that connects contributors (students,
 - 🎨 Tailwind CSS
 - 📦 Node.js (APIs)
 
+
+##📄 License & Contribution
+
+This project is developed and maintained by Mohit Kumar Paramanik.
+🛠️ SkillBridge is currently under active development — contributors are always welcome!
+
+Feel free to fork, suggest features, report issues, or submit pull requests.
+Together, let’s build a better bridge between skills and opportunities.
+
 ## Setup Instructions
 
 ```bash
@@ -29,3 +38,5 @@ git clone https://github.com/your-username/skillbridge.git
 cd skillbridge
 npm install
 npm run dev
+
+
