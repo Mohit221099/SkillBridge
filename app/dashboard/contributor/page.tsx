@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Edit, Bookmark, Send, PlusCircle, Trophy, CalendarClock, Eye } from "lucide-react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +11,67 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
+// Define interfaces for mock data
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  technologies: string[];
+  lastUpdated: string;
+  likes: number;
+  views: number;
+  image: string;
+  featured?: boolean;
+}
+
+interface Challenge {
+  id: number;
+  title: string;
+  company: string;
+  status: "in-progress" | "submitted" | "completed";
+  dueDate?: string;
+  submittedDate?: string;
+  progress?: number;
+  difficulty: string;
+  prize: string;
+}
+
+interface SavedJob {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  postedDate: string;
+  salary: string;
+  skills: string[];
+}
+
+interface Message {
+  id: number;
+  from: string;
+  company: string;
+  preview: string;
+  date: string;
+  unread: boolean;
+  avatar: string;
+}
+
+// StatCard props
+interface StatCardProps {
+  title: string;
+  value: string;
+  change: string;
+  icon: React.ReactNode;
+}
+
+// ChallengeStatusBadge props
+interface ChallengeStatusBadgeProps {
+  status: "in-progress" | "submitted" | "completed" | string;
+}
+
 export default function ContributorDashboard() {
-  // Mock data for projects
-  const [projects] = useState([
+  // Mock data with typed interfaces
+  const [projects] = useState<Project[]>([
     {
       id: 1,
       title: "Personal Portfolio Website",
@@ -36,8 +95,7 @@ export default function ContributorDashboard() {
     },
   ]);
 
-  // Mock data for challenges
-  const [challenges] = useState([
+  const [challenges] = useState<Challenge[]>([
     {
       id: 1,
       title: "Build a Weather Dashboard",
@@ -59,8 +117,7 @@ export default function ContributorDashboard() {
     },
   ]);
 
-  // Mock data for saved jobs
-  const [savedJobs] = useState([
+  const [savedJobs] = useState<SavedJob[]>([
     {
       id: 1,
       title: "Frontend Developer",
@@ -81,8 +138,7 @@ export default function ContributorDashboard() {
     },
   ]);
 
-  // Mock data for messages
-  const [messages] = useState([
+  const [messages] = useState<Message[]>([
     {
       id: 1,
       from: "Sarah Johnson",
@@ -103,22 +159,24 @@ export default function ContributorDashboard() {
     },
   ]);
 
-  // Format date to relative time (e.g., "2 days ago")
-  const getRelativeTime = (dateString) => {
+  // Format date to relative time
+  const getRelativeTime = (dateString: string | undefined): string => {
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
     const now = new Date();
-    const diffInMs = now - date;
+    const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) {
       const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
       if (diffInHours === 0) {
         const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-        return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+        return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
       }
-      return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+      return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
     } else if (diffInDays === 1) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (diffInDays < 7) {
       return `${diffInDays} days ago`;
     } else {
@@ -136,14 +194,14 @@ export default function ContributorDashboard() {
             <p className="text-muted-foreground">Here's what's happening with your projects and challenges.</p>
           </div>
           <div className="flex gap-3">
-            <Button asChild variant="outline">
-              <Link href="/profile/edit">
+            <Button variant="outline">
+              <Link href="/profile/edit" className="flex items-center">
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Profile
               </Link>
             </Button>
-            <Button asChild>
-              <Link href="/projects/new">
+            <Button>
+              <Link href="/projects/new" className="flex items-center">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Project
               </Link>
@@ -153,29 +211,29 @@ export default function ContributorDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            title="Project Views" 
-            value="259" 
-            change="+12% from last week" 
-            icon={<Eye className="h-5 w-5 text-blue-500" />} 
+          <StatCard
+            title="Project Views"
+            value="259"
+            change="+12% from last week"
+            icon={<Eye className="h-5 w-5 text-blue-500" />}
           />
-          <StatCard 
-            title="Completed Challenges" 
-            value="7" 
-            change="+2 this month" 
-            icon={<Trophy className="h-5 w-5 text-amber-500" />} 
+          <StatCard
+            title="Completed Challenges"
+            value="7"
+            change="+2 this month"
+            icon={<Trophy className="h-5 w-5 text-amber-500" />}
           />
-          <StatCard 
-            title="Active Applications" 
-            value="3" 
-            change="1 new response" 
-            icon={<Send className="h-5 w-5 text-green-500" />} 
+          <StatCard
+            title="Active Applications"
+            value="3"
+            change="1 new response"
+            icon={<Send className="h-5 w-5 text-green-500" />}
           />
-          <StatCard 
-            title="Upcoming Deadlines" 
-            value="2" 
-            change="Nearest: 3 days" 
-            icon={<CalendarClock className="h-5 w-5 text-red-500" />} 
+          <StatCard
+            title="Upcoming Deadlines"
+            value="2"
+            change="Nearest: 3 days"
+            icon={<CalendarClock className="h-5 w-5 text-red-500" />}
           />
         </div>
       </section>
@@ -193,8 +251,8 @@ export default function ContributorDashboard() {
         <TabsContent value="projects" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Your Projects</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/projects">
+            <Button variant="outline" size="sm">
+              <Link href="/projects" className="flex items-center">
                 View All <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -204,9 +262,11 @@ export default function ContributorDashboard() {
             {projects.map((project) => (
               <Card key={project.id} className="overflow-hidden group hover:shadow-md transition-shadow">
                 <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={project.image} 
-                    alt={project.title} 
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    width={1260}
+                    height={750}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   {project.featured && (
@@ -232,10 +292,8 @@ export default function ContributorDashboard() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={`/projects/${project.id}`}>
-                      View Project
-                    </Link>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Link href={`/projects/${project.id}`}>View Project</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -251,7 +309,7 @@ export default function ContributorDashboard() {
                 <p className="text-center text-sm text-muted-foreground mb-4">
                   Showcase your work to potential employers
                 </p>
-                <Button asChild>
+                <Button>
                   <Link href="/projects/new">Create Project</Link>
                 </Button>
               </CardContent>
@@ -263,8 +321,8 @@ export default function ContributorDashboard() {
         <TabsContent value="challenges" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Active Challenges</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/challenges">
+            <Button variant="outline" size="sm">
+              <Link href="/challenges" className="flex items-center">
                 Browse Challenges <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -288,7 +346,7 @@ export default function ContributorDashboard() {
                       <Badge variant="outline">{challenge.difficulty}</Badge>
                       <Badge variant="secondary">{challenge.prize}</Badge>
                     </div>
-                    {challenge.status === "in-progress" && (
+                    {challenge.status === "in-progress" && challenge.dueDate && (
                       <span className="text-sm text-muted-foreground">
                         Due: {new Date(challenge.dueDate).toLocaleDateString()}
                       </span>
@@ -299,8 +357,8 @@ export default function ContributorDashboard() {
                       </span>
                     )}
                   </div>
-                  
-                  {challenge.status === "in-progress" && (
+
+                  {challenge.status === "in-progress" && challenge.progress && (
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span>Progress</span>
@@ -311,7 +369,7 @@ export default function ContributorDashboard() {
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Button variant="outline" size="sm" className="w-full">
                     <Link href={`/challenges/${challenge.id}`}>
                       {challenge.status === "in-progress" ? "Continue Challenge" : "View Submission"}
                     </Link>
@@ -330,7 +388,7 @@ export default function ContributorDashboard() {
                 <p className="text-center text-sm text-muted-foreground mb-4">
                   Participate in challenges to showcase your skills and win prizes
                 </p>
-                <Button asChild variant="secondary">
+                <Button variant="secondary">
                   <Link href="/challenges">Browse Challenges</Link>
                 </Button>
               </CardContent>
@@ -342,8 +400,8 @@ export default function ContributorDashboard() {
         <TabsContent value="jobs" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Saved Jobs</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/jobs">
+            <Button variant="outline" size="sm">
+              <Link href="/jobs" className="flex items-center">
                 Browse Jobs <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -391,8 +449,8 @@ export default function ContributorDashboard() {
         <TabsContent value="messages" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Recent Messages</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/messages">
+            <Button variant="outline" size="sm">
+              <Link href="/messages" className="flex items-center">
                 View All <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -405,9 +463,11 @@ export default function ContributorDashboard() {
                   <li key={message.id} className="p-4 hover:bg-muted/50 transition-colors">
                     <Link href={`/messages/${message.id}`} className="flex gap-4">
                       <div className="relative flex-shrink-0">
-                        <img 
-                          src={message.avatar} 
-                          alt={message.from} 
+                        <Image
+                          src={message.avatar}
+                          alt={message.from}
+                          width={48}
+                          height={48}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         {message.unread && (
@@ -416,7 +476,11 @@ export default function ContributorDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <h4 className={`font-semibold truncate ${message.unread ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          <h4
+                            className={`font-semibold truncate ${
+                              message.unread ? "text-foreground" : "text-muted-foreground"
+                            }`}
+                          >
                             {message.from}
                           </h4>
                           <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
@@ -424,7 +488,11 @@ export default function ContributorDashboard() {
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">{message.company}</p>
-                        <p className={`text-sm truncate ${message.unread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                        <p
+                          className={`text-sm truncate ${
+                            message.unread ? "text-foreground font-medium" : "text-muted-foreground"
+                          }`}
+                        >
                           {message.preview}
                         </p>
                       </div>
@@ -440,7 +508,7 @@ export default function ContributorDashboard() {
   );
 }
 
-function StatCard({ title, value, change, icon }) {
+function StatCard({ title, value, change, icon }: StatCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -450,16 +518,14 @@ function StatCard({ title, value, change, icon }) {
             <h3 className="text-2xl font-bold mb-1">{value}</h3>
             <p className="text-xs text-muted-foreground">{change}</p>
           </div>
-          <div className="bg-primary/10 p-2 rounded-full">
-            {icon}
-          </div>
+          <div className="bg-primary/10 p-2 rounded-full">{icon}</div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function ChallengeStatusBadge({ status }) {
+function ChallengeStatusBadge({ status }: ChallengeStatusBadgeProps) {
   if (status === "in-progress") {
     return <Badge className="bg-amber-500">In Progress</Badge>;
   } else if (status === "submitted") {
