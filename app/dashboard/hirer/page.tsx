@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight, Edit, Bell, PlusCircle, FileSpreadsheet, PieChart, Search, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,61 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
+// Define interfaces for mock data
+interface Challenge {
+  id: number;
+  title: string;
+  description: string;
+  deadline: string;
+  participants: number;
+  submissions: number;
+  status: "active" | "draft" | "completed";
+}
+
+interface AnalyticsData {
+  name: string;
+  applicants: number;
+  interviews: number;
+  hires: number;
+}
+
+interface Candidate {
+  id: number;
+  name: string;
+  title: string;
+  matchScore: number;
+  skills: string[];
+  status: "new" | "reviewed" | "contacted" | "hired";
+  avatar: string;
+}
+
+// Component prop interfaces
+interface StatCardProps {
+  title: string;
+  value: string;
+  change: string;
+  icon: React.ReactNode;
+}
+
+interface ChallengeStatusBadgeProps {
+  status: "active" | "draft" | "completed" | string;
+}
+
+interface CandidateStatusBadgeProps {
+  status: "new" | "reviewed" | "contacted" | "hired" | string;
+  className?: string;
+}
+
+interface AnalyticsStatProps {
+  label: string;
+  value: string;
+  change: string;
+  positive: boolean;
+}
+
 export default function HirerDashboard() {
-  // Mock data for active challenges
-  const [challenges] = useState([
+  // Mock data with typed interfaces
+  const [challenges] = useState<Challenge[]>([
     {
       id: 1,
       title: "Build a Weather Dashboard",
@@ -34,15 +87,13 @@ export default function HirerDashboard() {
     },
   ]);
 
-  // Mock data for analytics
-  const [analyticsData] = useState([
-    { name: 'Aug', applicants: 12, interviews: 5, hires: 2 },
-    { name: 'Sep', applicants: 19, interviews: 8, hires: 3 },
-    { name: 'Oct', applicants: 27, interviews: 12, hires: 0 },
+  const [analyticsData] = useState<AnalyticsData[]>([
+    { name: "Aug", applicants: 12, interviews: 5, hires: 2 },
+    { name: "Sep", applicants: 19, interviews: 8, hires: 3 },
+    { name: "Oct", applicants: 27, interviews: 12, hires: 0 },
   ]);
 
-  // Mock data for top candidates
-  const [topCandidates] = useState([
+  const [topCandidates] = useState<Candidate[]>([
     {
       id: 1,
       name: "Alex Johnson",
@@ -72,37 +123,39 @@ export default function HirerDashboard() {
     },
   ]);
 
-  // Format date to relative time (e.g., "2 days ago")
-  const getRelativeTime = (dateString) => {
+  // Format date to relative time
+  const getRelativeTime = (dateString: string | undefined): string => {
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
     const now = new Date();
-    const diffInMs = now - date;
+    const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) {
       const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
       if (diffInHours === 0) {
         const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-        return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+        return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
       }
-      return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+      return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
     } else if (diffInDays === 1) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (diffInDays < 7) {
       return `${diffInDays} days ago`;
     } else {
       return date.toLocaleDateString();
     }
   };
-  
+
   // Calculate days remaining until a deadline
-  const getDaysRemaining = (dateString) => {
+  const getDaysRemaining = (dateString: string | undefined): number => {
+    if (!dateString) return 0;
     const deadline = new Date(dateString);
+    if (isNaN(deadline.getTime())) return 0;
     const now = new Date();
-    const diffInMs = deadline - now;
-    const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-    
-    return diffInDays;
+    const diffInMs = deadline.getTime() - now.getTime();
+    return Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
   };
 
   return (
@@ -115,14 +168,14 @@ export default function HirerDashboard() {
             <p className="text-muted-foreground">Here's what's happening with your challenges and candidates.</p>
           </div>
           <div className="flex gap-3">
-            <Button asChild variant="outline">
-              <Link href="/company/edit">
+            <Button variant="outline">
+              <Link href="/company/edit" className="flex items-center">
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Company Profile
               </Link>
             </Button>
-            <Button asChild>
-              <Link href="/challenges/new">
+            <Button>
+              <Link href="/challenges/new" className="flex items-center">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Post New Challenge
               </Link>
@@ -132,29 +185,29 @@ export default function HirerDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            title="Active Challenges" 
-            value="2" 
-            change="1 ending soon" 
-            icon={<FileSpreadsheet className="h-5 w-5 text-purple-500" />} 
+          <StatCard
+            title="Active Challenges"
+            value="2"
+            change="1 ending soon"
+            icon={<FileSpreadsheet className="h-5 w-5 text-purple-500" />}
           />
-          <StatCard 
-            title="Total Applicants" 
-            value="42" 
-            change="+8 this week" 
-            icon={<Users className="h-5 w-5 text-blue-500" />} 
+          <StatCard
+            title="Total Applicants"
+            value="42"
+            change="+8 this week"
+            icon={<Users className="h-5 w-5 text-blue-500" />}
           />
-          <StatCard 
-            title="Pending Reviews" 
-            value="7" 
-            change="3 new submissions" 
-            icon={<Bell className="h-5 w-5 text-amber-500" />} 
+          <StatCard
+            title="Pending Reviews"
+            value="7"
+            change="3 new submissions"
+            icon={<Bell className="h-5 w-5 text-amber-500" />}
           />
-          <StatCard 
-            title="Potential Matches" 
-            value="12" 
-            change="High match rate" 
-            icon={<Search className="h-5 w-5 text-green-500" />} 
+          <StatCard
+            title="Potential Matches"
+            value="12"
+            change="High match rate"
+            icon={<Search className="h-5 w-5 text-green-500" />}
           />
         </div>
       </section>
@@ -171,8 +224,8 @@ export default function HirerDashboard() {
         <TabsContent value="challenges" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Active Challenges</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/challenges/manage">
+            <Button variant="outline" size="sm">
+              <Link href="/challenges/manage" className="flex items-center">
                 Manage All <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -189,7 +242,7 @@ export default function HirerDashboard() {
                 </CardHeader>
                 <CardContent className="pb-2">
                   <p className="text-sm text-muted-foreground mb-3">{challenge.description}</p>
-                  
+
                   <div className="flex justify-between text-sm mb-2">
                     <div>
                       <span className="text-muted-foreground">Deadline: </span>
@@ -197,7 +250,7 @@ export default function HirerDashboard() {
                       <span className="text-muted-foreground ml-2">({getDaysRemaining(challenge.deadline)} days left)</span>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
@@ -206,29 +259,25 @@ export default function HirerDashboard() {
                       </div>
                       <Progress value={(challenge.participants / 30) * 100} className="h-2" />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Submissions</span>
                         <span className="font-medium">{challenge.submissions} / {challenge.participants}</span>
                       </div>
-                      <Progress 
-                        value={(challenge.submissions / challenge.participants) * 100} 
+                      <Progress
+                        value={(challenge.submissions / challenge.participants) * 100}
                         className="h-2"
                       />
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex gap-3">
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={`/challenges/${challenge.id}/submissions`}>
-                      View Submissions
-                    </Link>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Link href={`/challenges/${challenge.id}/submissions`}>View Submissions</Link>
                   </Button>
-                  <Button size="sm" className="w-full" asChild>
-                    <Link href={`/challenges/${challenge.id}/edit`}>
-                      Manage Challenge
-                    </Link>
+                  <Button size="sm" className="w-full">
+                    <Link href={`/challenges/${challenge.id}/edit`}>Manage Challenge</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -244,7 +293,7 @@ export default function HirerDashboard() {
                 <p className="text-center text-sm text-muted-foreground mb-4">
                   Post a challenge to find the perfect talent for your projects
                 </p>
-                <Button asChild>
+                <Button>
                   <Link href="/challenges/new">Create Challenge</Link>
                 </Button>
               </CardContent>
@@ -256,8 +305,8 @@ export default function HirerDashboard() {
         <TabsContent value="candidates" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Top Candidates</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/candidates">
+            <Button variant="outline" size="sm">
+              <Link href="/candidates" className="flex items-center">
                 View All <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -269,9 +318,11 @@ export default function HirerDashboard() {
                 {topCandidates.map((candidate) => (
                   <li key={candidate.id} className="p-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-start gap-4">
-                      <img 
-                        src={candidate.avatar} 
-                        alt={candidate.name} 
+                      <Image
+                        src={candidate.avatar}
+                        alt={candidate.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div className="flex-1 min-w-0">
@@ -287,7 +338,7 @@ export default function HirerDashboard() {
                             <CandidateStatusBadge status={candidate.status} className="ml-2" />
                           </div>
                         </div>
-                        
+
                         <div className="mt-2">
                           <div className="flex flex-wrap gap-2">
                             {candidate.skills.map((skill) => (
@@ -295,12 +346,12 @@ export default function HirerDashboard() {
                             ))}
                           </div>
                         </div>
-                        
+
                         <div className="mt-3 flex gap-2">
-                          <Button size="sm" variant="outline" asChild>
+                          <Button size="sm" variant="outline">
                             <Link href={`/candidates/${candidate.id}`}>View Profile</Link>
                           </Button>
-                          <Button size="sm" asChild>
+                          <Button size="sm">
                             <Link href={`/messages/new?recipient=${candidate.id}`}>Contact</Link>
                           </Button>
                         </div>
@@ -317,8 +368,8 @@ export default function HirerDashboard() {
         <TabsContent value="analytics" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Hiring Performance</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/analytics">
+            <Button variant="outline" size="sm">
+              <Link href="/analytics" className="flex items-center">
                 Detailed Reports <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -347,29 +398,29 @@ export default function HirerDashboard() {
               </div>
 
               <div className="grid grid-cols-3 gap-4 mt-6">
-                <AnalyticsStat 
-                  label="Applicants" 
-                  value="58" 
-                  change="+18% vs. previous period" 
-                  positive={true} 
+                <AnalyticsStat
+                  label="Applicants"
+                  value="58"
+                  change="+18% vs. previous period"
+                  positive={true}
                 />
-                <AnalyticsStat 
-                  label="Interview Rate" 
-                  value="43%" 
-                  change="+7% vs. previous period" 
-                  positive={true} 
+                <AnalyticsStat
+                  label="Interview Rate"
+                  value="43%"
+                  change="+7% vs. previous period"
+                  positive={true}
                 />
-                <AnalyticsStat 
-                  label="Time to Hire" 
-                  value="18 days" 
-                  change="-3 days vs. previous period" 
-                  positive={true} 
+                <AnalyticsStat
+                  label="Time to Hire"
+                  value="18 days"
+                  change="-3 days vs. previous period"
+                  positive={true}
                 />
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/analytics/export">
+              <Button variant="outline" className="w-full">
+                <Link href="/analytics/export" className="flex items-center">
                   <PieChart className="mr-2 h-4 w-4" />
                   Export Full Report
                 </Link>
@@ -382,7 +433,7 @@ export default function HirerDashboard() {
   );
 }
 
-function StatCard({ title, value, change, icon }) {
+function StatCard({ title, value, change, icon }: StatCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -392,16 +443,14 @@ function StatCard({ title, value, change, icon }) {
             <h3 className="text-2xl font-bold mb-1">{value}</h3>
             <p className="text-xs text-muted-foreground">{change}</p>
           </div>
-          <div className="bg-primary/10 p-2 rounded-full">
-            {icon}
-          </div>
+          <div className="bg-primary/10 p-2 rounded-full">{icon}</div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function ChallengeStatusBadge({ status }) {
+function ChallengeStatusBadge({ status }: ChallengeStatusBadgeProps) {
   if (status === "active") {
     return <Badge className="bg-green-600">Active</Badge>;
   } else if (status === "draft") {
@@ -413,7 +462,7 @@ function ChallengeStatusBadge({ status }) {
   }
 }
 
-function CandidateStatusBadge({ status, className = "" }) {
+function CandidateStatusBadge({ status, className = "" }: CandidateStatusBadgeProps) {
   if (status === "new") {
     return <Badge variant="outline" className={className}>New</Badge>;
   } else if (status === "reviewed") {
@@ -427,12 +476,12 @@ function CandidateStatusBadge({ status, className = "" }) {
   }
 }
 
-function AnalyticsStat({ label, value, change, positive }) {
+function AnalyticsStat({ label, value, change, positive }: AnalyticsStatProps) {
   return (
     <div className="text-center p-3 bg-muted/50 rounded-lg">
       <p className="text-sm text-muted-foreground mb-1">{label}</p>
       <p className="text-xl font-bold mb-1">{value}</p>
-      <p className={`text-xs ${positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+      <p className={`text-xs ${positive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
         {change}
       </p>
     </div>
