@@ -23,7 +23,7 @@ SkillBridge is a community-driven platform that connects contributors (students,
 - 📦 Node.js (APIs)
 
 
-##📄 License & Contribution
+## 📄 License & Contribution
 
 This project is developed and maintained by Mohit Kumar Paramanik.
 🛠️ SkillBridge is currently under active development — contributors are always welcome!
