@@ -1,49 +1,31 @@
-🌉 SkillBridge – A Collaborative Talent & Opportunity Platform
-CollabSphere is a full-stack community platform built with Next.js, designed to empower Contributors (students, developers, creators) and Hirers (startups, recruiters, companies) to connect through real-world challenges, projects, and opportunities.
+# SkillBridge 🚀
 
-🔑 Features
-🔐 Role-based Login: Seamless login flow for Contributors and Hirers with protected routes.
+SkillBridge is a community-driven platform that connects contributors (students, developers, creatives) with hirers (startups, companies, recruiters). Contributors can showcase projects, share ideas, and take on challenges, while hirers post tasks to identify potential candidates for internships and jobs.
 
-🧠 Upload Ideas & Projects: Contributors can share innovations, mini-projects, and games.
+## Features
 
-📣 Post Challenges & Tasks: Hirers can assign real-world tasks to discover skilled individuals.
+- 🧑‍💻 Dual Login: Contributors & Hirers
+- 📂 Upload Projects & Ideas
+- 🎮 Participate in Challenges & Games
+- 📢 Hirers can Post Real-world Tasks
+- 🧠 AI Chatbot for guidance
+- 📊 Skill-based Profiles
+- 🤝 Build Connections for Internships & Jobs
+- 💬 Chat & Collaborate on Projects
+- 📈 Gamified Leaderboard System
 
-🧑‍💼 Job & Internship Pipeline: Build credibility and get noticed through active participation.
+## Tech Stack
 
-🎮 Gamification: Points, badges & leaderboards for completed challenges.
+- ⚡ Next.js (Frontend)
+- 🐘 PostgreSQL / Supabase (Database)
+- 🔐 JWT Auth
+- 🎨 Tailwind CSS
+- 📦 Node.js (APIs)
 
-📈 Dynamic Portfolios: Auto-updated contributor profiles with project history & achievements.
+## Setup Instructions
 
-🤖 AI-Powered Suggestions (optional): Personalized task or contributor recommendations.
-
-💬 Real-Time Collaboration: Integrated chat for team or task discussions.
-
-🔐 JWT Auth & Middleware Protection.
-
-🧰 Tech Stack
-Frontend: Next.js (App Router) + Tailwind CSS
-
-Backend: API Routes in Next.js / Express (optional)
-
-Database: MongoDB (via Mongoose) / Supabase (alternative)
-
-Auth: NextAuth.js / JWT
-
-File Storage: Firebase / Cloudinary (for project images & documents)
-
-Deployment: Vercel (recommended for seamless Next.js integration)
-
-🚀 Planned Enhancements
-🔍 GitHub/LinkedIn integration for profile enrichment
-
-📽️ Video pitches/intros for contributors
-
-🧩 Team-based challenges & hackathon modules
-
-📧 Email notifications for tasks & invitations
-
-🧠 Resume screening with AI & keyword analysis
-
-🤝 Contribute
-We’re open to contributions, suggestions, and collaboration!
-Let's revolutionize how talent meets opportunity.
+```bash
+git clone https://github.com/your-username/skillbridge.git
+cd skillbridge
+npm install
+npm run dev
