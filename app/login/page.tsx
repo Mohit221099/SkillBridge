@@ -40,7 +40,7 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: { email: string; password: string; }) => {
     try {
       const user = await login(data.email, data.password);
       

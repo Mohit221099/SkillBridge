@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +7,6 @@ import { Code, Briefcase, ArrowLeft, Check, X } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,8 +46,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("contributor");
-  
-  // Set the active tab based on URL query parameter
+
   useEffect(() => {
     const role = searchParams.get("role");
     if (role === "contributor" || role === "hirer") {
@@ -60,6 +58,7 @@ export default function RegisterPage() {
   const {
     register: registerContributor,
     handleSubmit: handleSubmitContributor,
+    watch: watchContributor,
     formState: { errors: contributorErrors, isSubmitting: isContributorSubmitting },
   } = useForm({
     resolver: zodResolver(contributorFormSchema),
@@ -76,6 +75,7 @@ export default function RegisterPage() {
   const {
     register: registerHirer,
     handleSubmit: handleSubmitHirer,
+    watch: watchHirer,
     formState: { errors: hirerErrors, isSubmitting: isHirerSubmitting },
   } = useForm({
     resolver: zodResolver(hirerFormSchema),
@@ -88,33 +88,97 @@ export default function RegisterPage() {
     },
   });
 
-  const onSubmitContributor = async (data) => {
-    console.log("Contributor data:", data);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success("Account created successfully!");
-    router.push("/dashboard/contributor");
-  };
+  // Watch password fields for real-time validation
+  const contributorPassword = watchContributor("password");
+  const hirerPassword = watchHirer("password");
 
-  const onSubmitHirer = async (data) => {
-    console.log("Hirer data:", data);
+  // Handle contributor registration
+ // Update the onSubmitContributor and onSubmitHirer functions to include error logging
+// Update the onSubmitContributor and onSubmitHirer functions to include error logging
+const onSubmitContributor = async (data: any) => {
+  try {
+    console.log("Submitting contributor data:", data); // Debug log
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const response = await fetch("/api/register", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...data, role: "contributor" }),
+    });
     
-    toast.success("Company account created successfully!");
-    router.push("/dashboard/hirer");
+    console.log("Response status:", response.status);
+    
+    // Attempt to parse the response
+    let result;
+    try {
+      result = await response.json();
+      console.log("Response body:", result);
+    } catch (e) {
+      console.error("Failed to parse response:", e);
+    }
+
+    if (!response.ok) {
+      throw new Error(result?.message || `Error: ${response.status}`);
+    }
+
+    toast.success("Contributor account created successfully!");
+    router.push("/dashboard/contributor");
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Registration error:", err);
+  
+    toast.error(err.message || "Failed to create account. Please try again.");
+  }
+};
+
+  // Handle hirer registration
+  const onSubmitHirer = async (data: any) => {
+    try {
+      // Use a full URL path to ensure proper routing
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, role: "contributor" }),
+        // Add cache: 'no-store' to prevent caching issues
+        cache: 'no-store',
+      });
+  
+      // Log response for debugging
+      console.log("Registration response status:", response.status);
+      
+      // Check if we can get JSON from the response 
+      let result;
+      try {
+        result = await response.json();
+        console.log("Response data:", result);
+      } catch (e) {
+        console.error("Failed to parse response:", e);
+      }
+  
+      if (!response.ok) {
+        throw new Error(result?.message || "Failed to create account");
+      }
+  
+      toast.success("Hirer account created successfully!");
+      router.push("/dashboard/hirer");
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error("Registration error:", err);
+      toast.error(err.message || "Failed to create account. Please try again.");
+    }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
-      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/"
+        className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeft className="h-4 w-4" />
         Back to Home
       </Link>
-      
+
       <Card className="w-full max-w-md shadow-lg animate-fade-in">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-2">
@@ -129,17 +193,23 @@ export default function RegisterPage() {
             Join our community as a {activeTab === "contributor" ? "contributor" : "hirer"}
           </CardDescription>
         </CardHeader>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 mx-6">
-            <TabsTrigger value="contributor" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <TabsTrigger
+              value="contributor"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
               Contributor
             </TabsTrigger>
-            <TabsTrigger value="hirer" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <TabsTrigger
+              value="hirer"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
               Hirer
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Contributor Registration Form */}
           <TabsContent value="contributor">
             <form onSubmit={handleSubmitContributor(onSubmitContributor)}>
@@ -155,7 +225,7 @@ export default function RegisterPage() {
                     <p className="text-sm text-destructive">{contributorErrors.name.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="contributor-email">Email</Label>
                   <Input
@@ -168,7 +238,7 @@ export default function RegisterPage() {
                     <p className="text-sm text-destructive">{contributorErrors.email.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="contributor-password">Password</Label>
                   <Input
@@ -179,10 +249,9 @@ export default function RegisterPage() {
                   {contributorErrors.password && (
                     <p className="text-sm text-destructive">{contributorErrors.password.message}</p>
                   )}
-                  
-                  <PasswordStrengthIndicator password="" />
+                  <PasswordStrengthIndicator password={contributorPassword} />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="contributor-skills">Skills (comma separated)</Label>
                   <Input
@@ -191,43 +260,43 @@ export default function RegisterPage() {
                     {...registerContributor("skills")}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Experience Level</Label>
                   <RadioGroup defaultValue="student" {...registerContributor("experience")}>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="student" id="student" />
-                      <Label htmlFor="student">Student</Label>
+                      <RadioGroupItem value="student" id="contributor-student" />
+                      <Label htmlFor="contributor-student">Student</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="beginner" id="beginner" />
-                      <Label htmlFor="beginner">Beginner</Label>
+                      <RadioGroupItem value="beginner" id="contributor-beginner" />
+                      <Label htmlFor="contributor-beginner">Beginner</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="intermediate" id="intermediate" />
-                      <Label htmlFor="intermediate">Intermediate</Label>
+                      <RadioGroupItem value="intermediate" id="contributor-intermediate" />
+                      <Label htmlFor="contributor-intermediate">Intermediate</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="advanced" id="advanced" />
-                      <Label htmlFor="advanced">Advanced</Label>
+                      <RadioGroupItem value="advanced" id="contributor-advanced" />
+                      <Label htmlFor="contributor-advanced">Advanced</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="expert" id="expert" />
-                      <Label htmlFor="expert">Expert</Label>
+                      <RadioGroupItem value="expert" id="contributor-expert" />
+                      <Label htmlFor="contributor-expert">Expert</Label>
                     </div>
                   </RadioGroup>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex flex-col">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700"
                   disabled={isContributorSubmitting}
                 >
                   {isContributorSubmitting ? "Creating Account..." : "Create Contributor Account"}
                 </Button>
-                
+
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   Already have an account?{" "}
                   <Link href="/login" className="text-blue-600 hover:underline">
@@ -237,7 +306,7 @@ export default function RegisterPage() {
               </CardFooter>
             </form>
           </TabsContent>
-          
+
           {/* Hirer Registration Form */}
           <TabsContent value="hirer">
             <form onSubmit={handleSubmitHirer(onSubmitHirer)}>
@@ -253,7 +322,7 @@ export default function RegisterPage() {
                     <p className="text-sm text-destructive">{hirerErrors.companyName.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="hirer-email">Company Email</Label>
                   <Input
@@ -266,7 +335,7 @@ export default function RegisterPage() {
                     <p className="text-sm text-destructive">{hirerErrors.email.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="hirer-password">Password</Label>
                   <Input
@@ -277,10 +346,9 @@ export default function RegisterPage() {
                   {hirerErrors.password && (
                     <p className="text-sm text-destructive">{hirerErrors.password.message}</p>
                   )}
-                  
-                  <PasswordStrengthIndicator password="" />
+                  <PasswordStrengthIndicator password={hirerPassword} />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="hirer-industry">Industry</Label>
                   <Input
@@ -292,7 +360,7 @@ export default function RegisterPage() {
                     <p className="text-sm text-destructive">{hirerErrors.industry.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="hirer-website">Website (optional)</Label>
                   <Input
@@ -305,16 +373,16 @@ export default function RegisterPage() {
                   )}
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex flex-col">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   disabled={isHirerSubmitting}
                 >
                   {isHirerSubmitting ? "Creating Account..." : "Create Hirer Account"}
                 </Button>
-                
+
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   Already have an account?{" "}
                   <Link href="/login" className="text-purple-600 hover:underline">
@@ -330,35 +398,27 @@ export default function RegisterPage() {
   );
 }
 
-function PasswordStrengthIndicator({ password }) {
-  // This is a placeholder component that would actually calculate password strength
-  // For the demo, we'll just show a static indicator
+function PasswordStrengthIndicator({ password }: { password: string }) {
+  const requirements = [
+    { text: "At least 8 characters", met: password?.length >= 8 },
+    { text: "At least one uppercase letter", met: /[A-Z]/.test(password) },
+    { text: "At least one lowercase letter", met: /[a-z]/.test(password) },
+    { text: "At least one number", met: /[0-9]/.test(password) },
+  ];
+
   return (
     <div className="mt-1">
       <p className="text-xs text-muted-foreground mb-1">Password strength requirements:</p>
       <div className="space-y-1">
-        <Requirement 
-          met={true} 
-          text="At least 8 characters"
-        />
-        <Requirement 
-          met={true} 
-          text="At least one uppercase letter"
-        />
-        <Requirement 
-          met={true} 
-          text="At least one lowercase letter"
-        />
-        <Requirement 
-          met={true} 
-          text="At least one number"
-        />
+        {requirements.map((req, index) => (
+          <Requirement key={index} met={req.met} text={req.text} />
+        ))}
       </div>
     </div>
   );
 }
 
-function Requirement({ met, text }) {
+function Requirement({ met, text }: { met: boolean; text: string }) {
   return (
     <div className="flex items-center gap-2">
       {met ? (
@@ -366,7 +426,7 @@ function Requirement({ met, text }) {
       ) : (
         <X className="h-3 w-3 text-destructive" />
       )}
-      <span className={`text-xs ${met ? 'text-muted-foreground' : 'text-destructive'}`}>
+      <span className={`text-xs ${met ? "text-muted-foreground" : "text-destructive"}`}>
         {text}
       </span>
     </div>

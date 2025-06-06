@@ -87,15 +87,14 @@ export default function Footer() {
   );
 }
 
-function FooterLink({ href, children }) {
+function FooterLink({ href }: { href: string; children: React.ReactNode }) {
   return (
     <li>
       <Link 
         href={href} 
         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        {children}
-      </Link>
+          </Link>
     </li>
   );
 }
